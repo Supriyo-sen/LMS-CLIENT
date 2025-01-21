@@ -1,4 +1,4 @@
-// src/pages/CourseManagement.jsx
+import AddCourse from "@/components/Course/AddCourse";
 import { Button } from "@/components/ui/button";
 
 const CourseManagement = () => {
@@ -41,9 +41,7 @@ const CourseManagement = () => {
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold mb-6">Course Management</h1>
-        <Button size="md" className="mb-4  px-4 py-2">
-          Add Course
-        </Button>
+        <AddCourse />
       </div>
       <div className="bg-white shadow-md p-4 rounded-lg">
         <table className="w-full">

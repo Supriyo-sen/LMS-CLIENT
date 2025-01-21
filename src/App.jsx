@@ -35,6 +35,8 @@ import Home from "./pages/Home/Home";
 import FuturisticNavbar from "./components/Navbar/FuturisticNavbar";
 import { Toaster } from "react-hot-toast";
 import PublicRoute from "./components/Layout/PublicRoute";
+import EnrolledStudentManagement from "./pages/AdminManagement/EnrolledStudentManagement";
+import EnrolledTeacherManagement from "./pages/AdminManagement/EnrolledTeacherManagement";
 
 const App = () => {
   return (
@@ -73,6 +75,8 @@ const App = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="courses" element={<CourseManagement />} />
+          <Route path="students" element={<EnrolledStudentManagement />} />
+          <Route path="teachers" element={<EnrolledTeacherManagement />} />
         </Route>
 
         {/* Course routes */}

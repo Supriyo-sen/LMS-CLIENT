@@ -66,6 +66,16 @@ const DashboardLayout = ({ role }) => {
         label: "Course Management",
         icon: <BookOpenIcon className="w-5 h-5" />,
       },
+      {
+        to: "/dashboard/admin/students",
+        label: "Enrolled Students",
+        icon: <UsersIcon className="w-5 h-5" />,
+      },
+      {
+        to: "/dashboard/admin/teachers",
+        label: "Enrolled Teachers",
+        icon: <UsersIcon className="w-5 h-5" />,
+      },
     ],
   };
 
@@ -134,7 +144,7 @@ const DashboardLayout = ({ role }) => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 bg-white">
           <Outlet />
         </main>
       </div>
