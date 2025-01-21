@@ -37,6 +37,7 @@ import { Toaster } from "react-hot-toast";
 import PublicRoute from "./components/Layout/PublicRoute";
 import EnrolledStudentManagement from "./pages/AdminManagement/EnrolledStudentManagement";
 import EnrolledTeacherManagement from "./pages/AdminManagement/EnrolledTeacherManagement";
+import AdminChatSection from "./pages/AdminManagement/AdminChatSection";
 
 const App = () => {
   return (
@@ -77,6 +78,7 @@ const App = () => {
           <Route path="courses" element={<CourseManagement />} />
           <Route path="students" element={<EnrolledStudentManagement />} />
           <Route path="teachers" element={<EnrolledTeacherManagement />} />
+          <Route path="chats" element={<AdminChatSection />} />
         </Route>
 
         {/* Course routes */}

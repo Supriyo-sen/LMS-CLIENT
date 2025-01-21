@@ -10,6 +10,7 @@ import {
   UsersIcon,
   MenuIcon,
   XIcon,
+  MessageCircle,
 } from "lucide-react";
 
 const DashboardLayout = ({ role }) => {
@@ -75,6 +76,11 @@ const DashboardLayout = ({ role }) => {
         to: "/dashboard/admin/teachers",
         label: "Enrolled Teachers",
         icon: <UsersIcon className="w-5 h-5" />,
+      },
+      {
+        to: "/dashboard/admin/chats",
+        label: "Chat",
+        icon: <MessageCircle className="w-5 h-5" />,
       },
     ],
   };
