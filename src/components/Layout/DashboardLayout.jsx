@@ -1,5 +1,6 @@
 // src/components/Layout/DashboardLayout.jsx
 import { Link, Outlet } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   BellIcon,
@@ -7,9 +8,13 @@ import {
   HomeIcon,
   BookOpenIcon,
   UsersIcon,
-} from "lucide-react"; // Icons from ShadCN or Lucide
+  MenuIcon,
+  XIcon,
+} from "lucide-react";
 
 const DashboardLayout = ({ role }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   const links = {
     student: [
       {
@@ -47,17 +52,17 @@ const DashboardLayout = ({ role }) => {
     ],
     admin: [
       {
-        to: "/dashboard",
+        to: "/dashboard/admin",
         label: "Home",
         icon: <HomeIcon className="w-5 h-5" />,
       },
       {
-        to: "/dashboard/users",
+        to: "/dashboard/admin/users",
         label: "User Management",
         icon: <UsersIcon className="w-5 h-5" />,
       },
       {
-        to: "/dashboard/courses",
+        to: "/dashboard/admin/courses",
         label: "Course Management",
         icon: <BookOpenIcon className="w-5 h-5" />,
       },
@@ -65,10 +70,36 @@ const DashboardLayout = ({ role }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-6">
-        <h2 className="text-xl font-bold mb-6 text-center">Dashboard</h2>
+      <aside
+        className={`${
+          isSidebarOpen ? "w-64" : "w-16"
+        } bg-white shadow-md p-6 transition-all duration-300 relative`}
+      >
+        {/* Sidebar Header with Toggle Icon */}
+        <div className="flex justify-between items-center mb-6">
+          {isSidebarOpen ? (
+            <h2 className="text-xl font-bold">Dashboard</h2>
+          ) : (
+            <h2 className="text-xl font-bold opacity-0">D</h2>
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="absolute top-4 right-4"
+          >
+            {isSidebarOpen ? (
+              <XIcon className="w-6 h-6" />
+            ) : (
+              <MenuIcon className="w-6 h-6" />
+            )}
+          </Button>
+        </div>
+
+        {/* Navigation Links */}
         <nav className="space-y-4">
           {links[role].map((link) => (
             <Link
@@ -77,16 +108,22 @@ const DashboardLayout = ({ role }) => {
               className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-gray-200 rounded-lg"
             >
               {link.icon}
-              <span>{link.label}</span>
+              <span
+                className={`${
+                  isSidebarOpen ? "opacity-100" : "opacity-0"
+                } transition-opacity duration-300`}
+              >
+                {link.label}
+              </span>
             </Link>
           ))}
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Navbar */}
-        <header className="flex justify-between items-center bg-white p-4 shadow rounded-lg">
+        <header className="flex justify-between items-center bg-white p-4 shadow">
           <h1 className="text-lg font-semibold">
             Welcome, {role.charAt(0).toUpperCase() + role.slice(1)}!
           </h1>
@@ -97,10 +134,10 @@ const DashboardLayout = ({ role }) => {
         </header>
 
         {/* Content */}
-        <div className="mt-6">
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

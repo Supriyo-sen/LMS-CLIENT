@@ -33,18 +33,23 @@ import ContactUs from "./pages/Utility/ContactUs";
 import TermsAndConditions from "./pages/Utility/TermsAndConditions";
 import Home from "./pages/Home/Home";
 import FuturisticNavbar from "./components/Navbar/FuturisticNavbar";
+import { Toaster } from "react-hot-toast";
+import PublicRoute from "./components/Layout/PublicRoute";
 
 const App = () => {
   return (
     <Router>
+      <Toaster />
       <FuturisticNavbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* Authentication Pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route element={<PublicRoute />}>
+          {/* Authentication Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Route>
 
         {/* Dashboard Routes */}
         <Route
@@ -66,6 +71,8 @@ const App = () => {
           element={<DashboardLayout role="admin" />}
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="courses" element={<CourseManagement />} />
         </Route>
 
         {/* Course routes */}
@@ -97,8 +104,6 @@ const App = () => {
         <Route path="/settings" element={<AccountSettings />} />
 
         {/* Admin routes */}
-        <Route path="/admin/users" element={<UserManagement />} />
-        <Route path="/admin/courses" element={<CourseManagement />} />
         <Route path="/admin/analytics" element={<SystemAnalytics />} />
 
         {/* Catch-all for undefined routes */}

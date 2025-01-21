@@ -2,37 +2,45 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form } from "@/components/ui/form";
 import { Alert } from "@/components/ui/alert";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import { useLoginMutation } from "@/redux/slices/authApiSlice";
+import { setCredentials } from "@/redux/slices/authSlice";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (
-      formData.email === "test@example.com" &&
-      formData.password === "password"
-    ) {
-      console.log("Login Successful");
-    } else {
-      setError("Invalid email or password.");
+    try {
+      const response = await login(formData).unwrap();
+      dispatch(
+        setCredentials({ token: response.data.token, user: response.data })
+      );
+
+      toast.success(response.message || "Login successful!");
+    } catch (err) {
+      setError(err?.data?.message || "Login failed. Please try again.");
     }
   };
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 shadow-md rounded-lg">
-        <h2 className="text-center text-2xl font-bold text-gray-800">Login</h2>
-        <p className="text-center text-gray-500">
-          Welcome back! Please login to your account.
-        </p>
+      <div className="w-full max-w-md bg-white p-8 shadow-xl rounded-lg transform transition-transform hover:scale-105">
+        <h2 className="text-center text-3xl font-extrabold text-gray-800">
+          Welcome Back
+        </h2>
+        <p className="text-center text-gray-500">Login to your account</p>
 
         {error && (
           <Alert variant="destructive" className="mt-4">
@@ -40,11 +48,12 @@ const Login = () => {
           </Alert>
         )}
 
-        <Form onSubmit={handleSubmit} className="space-y-4 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          {/* Email Input */}
           <div>
             <label
               htmlFor="email"
-              className="text-sm font-medium text-gray-900"
+              className="block text-sm font-medium text-gray-700"
             >
               Email Address
             </label>
@@ -55,15 +64,16 @@ const Login = () => {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className="mt-1"
               required
+              className="mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
+          {/* Password Input */}
           <div>
             <label
               htmlFor="password"
-              className="text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700"
             >
               Password
             </label>
@@ -74,29 +84,39 @@ const Login = () => {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className="mt-1"
               required
+              className="mt-1 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
+          {/* Forgot Password Link */}
           <div className="flex justify-between items-center">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm font-medium text-blue-600 hover:text-blue-800"
             >
               Forgot Password?
             </Link>
           </div>
 
-          <Button type="submit" className="w-full">
-            Login
+          {/* Login Button */}
+          <Button
+            type="submit"
+            className="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg shadow-md hover:from-purple-600 hover:to-blue-500 transition-all transform hover:scale-105"
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Login"}
           </Button>
-        </Form>
+        </form>
 
-        <div className="text-center mt-4">
+        {/* Signup Link */}
+        <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-blue-600 hover:underline">
+            <Link
+              to="/signup"
+              className="text-blue-600 font-medium hover:text-blue-800"
+            >
               Signup
             </Link>
           </p>
