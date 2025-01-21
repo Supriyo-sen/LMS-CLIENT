@@ -9,13 +9,11 @@ const AdminChatSection = () => {
   const users = [
     { id: 1, name: "John Doe", type: "Student" },
     { id: 2, name: "Jane Smith", type: "Teacher" },
-    { id: 3, name: "Mark Lee", type: "Student" },
-    { id: 4, name: "Emily Davis", type: "Teacher" },
+    // Additional users...
   ];
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    // Fetch chat history for the selected user
     setMessages([
       { text: "Hello Admin!", isAdmin: false },
       { text: "Hi! How can I help you?", isAdmin: true },
@@ -24,11 +22,10 @@ const AdminChatSection = () => {
 
   const handleSendMessage = (message) => {
     setMessages((prev) => [...prev, { text: message, isAdmin: true }]);
-    // Emit message to WebSocket server
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col lg:flex-row h-screen">
       <UserList users={users} onSelectUser={handleSelectUser} />
       {selectedUser ? (
         <ChatWindow
@@ -37,7 +34,7 @@ const AdminChatSection = () => {
           onSendMessage={handleSendMessage}
         />
       ) : (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center bg-gray-50">
           <p className="text-gray-500">Select a user to start chatting</p>
         </div>
       )}

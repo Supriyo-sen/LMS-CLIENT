@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, Paperclip } from "lucide-react";
 
 const ChatWindow = ({ user, messages, onSendMessage }) => {
   const [newMessage, setNewMessage] = useState("");
@@ -15,45 +21,86 @@ const ChatWindow = ({ user, messages, onSendMessage }) => {
     }
   };
 
+  const getInitials = (name) =>
+    name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+
+  const getTypeColor = (type) => {
+    switch (type.toLowerCase()) {
+      case "student":
+        return "bg-blue-500";
+      case "teacher":
+        return "bg-green-500";
+      case "admin":
+        return "bg-purple-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="flex items-center border-b pb-4 mb-4">
-        <h2 className="text-xl font-bold">{user.name}</h2>
-        <span className="ml-4 text-gray-500">{user.type}</span>
+    <div className="flex flex-col h-full w-full bg-gray-50 shadow-lg overflow-hidden">
+      <div className="flex items-center justify-between p-4 bg-gray-100 border-b">
+        <div className="flex items-center">
+          <Avatar className="h-10 w-10 mr-3">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h2 className="text-lg font-semibold">{user.name}</h2>
+            <Badge className={`${getTypeColor(user.type)}`}>{user.type}</Badge>
+          </div>
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1 p-4">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`p-2 my-2 ${msg.isAdmin ? "text-right" : "text-left"}`}
+            className={`flex ${
+              msg.isAdmin ? "justify-end" : "justify-start"
+            } mb-4`}
           >
-            <p
-              className={`inline-block p-2 rounded ${
+            <div
+              className={`max-w-[70%] p-3 rounded-lg ${
                 msg.isAdmin
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-800"
-              }`}
+                  ? "bg-blue-500 text-white rounded-br-none"
+                  : "bg-white text-gray-800 rounded-bl-none"
+              } shadow-md`}
             >
-              {msg.text}
-            </p>
+              <p>{msg.text}</p>
+              <span
+                className={`text-xs mt-1 block ${
+                  msg.isAdmin ? "text-blue-200" : "text-gray-500"
+                }`}
+              >
+                {new Date().toLocaleTimeString()}
+              </span>
+            </div>
           </div>
         ))}
         <div ref={chatEndRef} />
-      </div>
-      <div className="flex items-center mt-4">
-        <input
-          type="text"
-          placeholder="Type a message..."
-          className="flex-1 px-4 py-2 border rounded"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-        />
-        <button
-          onClick={handleSend}
-          className="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Send
-        </button>
+      </ScrollArea>
+      <div className="p-4 bg-white border-t">
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="icon" className="shrink-0">
+            <Paperclip className="h-4 w-4" />
+          </Button>
+          <Input
+            type="text"
+            placeholder="Type a message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            className="flex-1"
+          />
+          <Button onClick={handleSend} className="shrink-0">
+            <Send className="h-4 w-4 mr-2" />
+            Send
+          </Button>
+        </div>
       </div>
     </div>
   );
