@@ -38,6 +38,7 @@ import PublicRoute from "./components/Layout/PublicRoute";
 import EnrolledStudentManagement from "./pages/AdminManagement/EnrolledStudentManagement";
 import EnrolledTeacherManagement from "./pages/AdminManagement/EnrolledTeacherManagement";
 import AdminChatSection from "./pages/AdminManagement/AdminChatSection";
+import StudentChatSection from "./pages/StudentManagement/StudentChatSection";
 
 const App = () => {
   return (
@@ -60,6 +61,7 @@ const App = () => {
           element={<DashboardLayout role="student" />}
         >
           <Route index element={<StudentDashboard />} />
+          <Route path="chats" element={<StudentChatSection />} />
         </Route>
 
         <Route

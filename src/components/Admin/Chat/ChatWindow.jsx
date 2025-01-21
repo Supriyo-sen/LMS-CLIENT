@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,13 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Paperclip } from "lucide-react";
 
-const ChatWindow = ({ user, messages, onSendMessage }) => {
-  const [newMessage, setNewMessage] = useState("");
+const ChatWindow = ({
+  user,
+  messages,
+  onSendMessage,
+  newMessage,
+  setNewMessage,
+}) => {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -15,30 +20,7 @@ const ChatWindow = ({ user, messages, onSendMessage }) => {
   }, [messages]);
 
   const handleSend = () => {
-    if (newMessage.trim()) {
-      onSendMessage(newMessage);
-      setNewMessage("");
-    }
-  };
-
-  const getInitials = (name) =>
-    name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
-
-  const getTypeColor = (type) => {
-    switch (type.toLowerCase()) {
-      case "student":
-        return "bg-blue-500";
-      case "teacher":
-        return "bg-green-500";
-      case "admin":
-        return "bg-purple-500";
-      default:
-        return "bg-gray-500";
-    }
+    onSendMessage();
   };
 
   return (
@@ -47,14 +29,15 @@ const ChatWindow = ({ user, messages, onSendMessage }) => {
         <div className="flex items-center">
           <Avatar className="h-10 w-10 mr-3">
             <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+            <AvatarFallback>{user.name[0]}</AvatarFallback>
           </Avatar>
           <div>
             <h2 className="text-lg font-semibold">{user.name}</h2>
-            <Badge className={`${getTypeColor(user.type)}`}>{user.type}</Badge>
+            <Badge className="bg-green-500">{user.type}</Badge>
           </div>
         </div>
       </div>
+
       <ScrollArea className="flex-1 p-4">
         {messages.map((msg, index) => (
           <div
@@ -77,12 +60,17 @@ const ChatWindow = ({ user, messages, onSendMessage }) => {
                 }`}
               >
                 {new Date().toLocaleTimeString()}
+                {msg.isRead && (
+                  <span className="ml-1 text-blue-600">✔</span>
+                )}{" "}
+                {/* Blue tick */}
               </span>
             </div>
           </div>
         ))}
         <div ref={chatEndRef} />
       </ScrollArea>
+
       <div className="p-4 bg-white border-t">
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="icon" className="shrink-0">

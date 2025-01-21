@@ -1,27 +1,24 @@
-import AddCourse from "@/components/Course/AddCourse";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
+import { useFetchAllCoursesQuery } from "@/redux/slices/adminSlice";
+import AddCourse from "@/components/Course/AddCourse";
 
 const CourseManagement = () => {
-  const courses = [
-    {
-      id: 1,
-      title: "React for Beginners",
-      instructor: "John Doe",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      title: "Node.js Advanced",
-      instructor: "Jane Smith",
-      status: "Approved",
-    },
-    {
-      id: 3,
-      title: "Python Essentials",
-      instructor: "Alice Johnson",
-      status: "Rejected",
-    },
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Fetch courses from API
+  const { data: courses, isLoading } = useFetchAllCoursesQuery();
+
+  if (isLoading) return <p>Loading courses...</p>;
+
+  const paginate = (array) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return array.slice(startIndex, startIndex + itemsPerPage);
+  };
+
+  const paginatedCourses = paginate(courses || []);
 
   const handleApprove = (courseId) => {
     alert(`Approved course with ID: ${courseId}`);
@@ -54,24 +51,24 @@ const CourseManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {courses.map((course) => (
+            {paginatedCourses.map((course) => (
               <tr key={course.id} className="border-t">
-                <td className="p-2">{course.title}</td>
-                <td className="p-2">{course.instructor}</td>
-                <td className="p-2">{course.status}</td>
+                <td className="p-2">{course.name}</td>
+                <td className="p-2">{course.teacherId?.name}</td>
+                <td className="p-2">{course.courseState}</td>
                 <td className="p-2 space-x-2">
                   {course.status === "Pending" && (
-                    <Button size="sm" onClick={() => handleApprove(course.id)}>
+                    <Button size="sm" onClick={() => handleApprove(course._id)}>
                       Approve
                     </Button>
                   )}
-                  <Button size="sm" onClick={() => handleEdit(course.id)}>
+                  <Button size="sm" onClick={() => handleEdit(course._id)}>
                     Edit
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(course.id)}
+                    onClick={() => handleDelete(course._id)}
                   >
                     Delete
                   </Button>
@@ -80,6 +77,14 @@ const CourseManagement = () => {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={courses.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

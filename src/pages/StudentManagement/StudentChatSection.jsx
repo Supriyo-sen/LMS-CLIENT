@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useFetchAllUsersQuery } from "@/redux/slices/adminSlice"; // Hook to fetch all users
-import { useGetChatHistoryQuery } from "@/redux/slices/chatSlice"; // Fetch chat history
-import io from "socket.io-client"; // WebSocket client
+import { useFetchAllUsersQuery } from "@/redux/slices/adminSlice";
+import { useGetChatHistoryQuery } from "@/redux/slices/chatSlice";
+import io from "socket.io-client";
 import ChatWindow from "@/components/Admin/Chat/ChatWindow";
-import UserList from "@/components/Admin/Chat/UserList"; // Reuse the UserList component
+import UserList from "@/components/Student/Chat/UserList";
 
-const AdminChatSection = () => {
+const StudentChatSection = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [socket, setSocket] = useState(null); // WebSocket socket state
+  const [socket, setSocket] = useState(null);
   const [newMessage, setNewMessage] = useState("");
 
-  // Fetching all users (students and teachers)
   const { data: users, isLoading, error } = useFetchAllUsersQuery();
-  console.log("users", users);
 
-  // WebSocket connection setup
   useEffect(() => {
     const socketInstance = io("http://localhost:5000");
     setSocket(socketInstance);
@@ -29,7 +26,6 @@ const AdminChatSection = () => {
     };
   }, []);
 
-  // Fetch chat history for selected user (skip until a user is selected)
   const {
     data: chatHistory,
     refetch,
@@ -44,7 +40,6 @@ const AdminChatSection = () => {
     }
   }, [chatHistory]);
 
-  // Handle user selection
   const handleSelectUser = (user) => {
     setSelectedUser(user);
     if (!isFetching) {
@@ -52,18 +47,17 @@ const AdminChatSection = () => {
     }
   };
 
-  // Handle sending a message
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       socket.emit("send_message", {
         roomId: selectedUser._id,
         content: newMessage,
-        sender: "admin",
+        sender: "student",
       });
 
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: newMessage, isAdmin: true, isRead: false },
+        { text: newMessage, isAdmin: false, isRead: false },
       ]);
       setNewMessage("");
     }
@@ -92,4 +86,4 @@ const AdminChatSection = () => {
   );
 };
 
-export default AdminChatSection;
+export default StudentChatSection;

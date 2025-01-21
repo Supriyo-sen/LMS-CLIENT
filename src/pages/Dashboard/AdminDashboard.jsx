@@ -13,7 +13,6 @@ import {
   ArcElement,
 } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -42,7 +41,6 @@ const AdminDashboard = () => {
     revenue: 5000,
   };
 
-  // Line Chart Data
   const lineChartData = {
     labels: ["January", "February", "March", "April", "May"],
     datasets: [
@@ -56,7 +54,6 @@ const AdminDashboard = () => {
     ],
   };
 
-  // Pie Chart Data
   const pieChartData = {
     labels: ["Students", "Teachers"],
     datasets: [
@@ -72,7 +69,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
+    <div className="p-8  min-h-screen">
       {/* Header Section */}
       <header className="mb-8">
         <h1 className="text-3xl font-extrabold text-gray-800">
@@ -129,58 +126,6 @@ const AdminDashboard = () => {
             <Pie data={pieChartData} />
           </div>
         </div>
-      </section>
-
-      {/* User Management Section */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          User Management
-        </h2>
-        <ul className="space-y-4">
-          {users.map((user) => (
-            <li
-              key={user.id}
-              className="p-4 bg-white shadow rounded-lg flex items-center justify-between"
-            >
-              <div>
-                <h3 className="font-bold text-lg text-gray-800">{user.name}</h3>
-                <p className="text-sm text-gray-600">Role: {user.role}</p>
-              </div>
-              <div className="space-x-4">
-                <Button variant="outline">Edit</Button>
-                <Button variant="destructive">Delete</Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Course Management Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Course Management
-        </h2>
-        <ul className="space-y-4">
-          {courses.map((course) => (
-            <li
-              key={course.id}
-              className="p-4 bg-white shadow rounded-lg flex items-center justify-between"
-            >
-              <div>
-                <h3 className="font-bold text-lg text-gray-800">
-                  {course.title}
-                </h3>
-                <p className="text-sm text-gray-600">Status: {course.status}</p>
-              </div>
-              <div className="space-x-4">
-                {course.status === "Pending" && (
-                  <Button variant="outline">Approve</Button>
-                )}
-                <Button variant="destructive">Delete</Button>
-              </div>
-            </li>
-          ))}
-        </ul>
       </section>
     </div>
   );

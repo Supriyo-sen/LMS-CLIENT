@@ -5,6 +5,7 @@ import userReducer from "./slices/userSlice";
 import courseReducer from "./slices/courseSlice";
 import adminReducer from "./slices/adminSlice";
 import paymentReducer from "./slices/paymentSlice";
+import chatReducer from "./slices/chatSlice";
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     course: courseReducer,
     admin: adminReducer,
     payment: paymentReducer,
+    chat: chatReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),

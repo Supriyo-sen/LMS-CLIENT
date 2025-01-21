@@ -10,8 +10,9 @@ const UserList = ({ users, onSelectUser }) => {
 
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+      (user.role === "teacher" || user.role === "admin") &&
+      (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.role.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getInitials = (name) =>
@@ -22,7 +23,7 @@ const UserList = ({ users, onSelectUser }) => {
       .toUpperCase();
 
   const getTypeColor = (role) => {
-    switch (role) {
+    switch (role.toLowerCase()) {
       case "student":
         return "bg-blue-500";
       case "teacher":

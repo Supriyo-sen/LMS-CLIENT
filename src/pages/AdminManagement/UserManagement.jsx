@@ -1,4 +1,3 @@
-// src/pages/UserManagement.jsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,66 +12,60 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import {
+  useFetchAllUsersQuery,
+  useDeleteUserMutation,
+} from "@/redux/slices/adminSlice";
+import { useChangePasswordMutation } from "@/redux/slices/userSlice";
+import toast from "react-hot-toast";
+import { EyeClosed, EyeIcon } from "lucide-react";
 
 const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [editUserId, setEditUserId] = useState(null);
   const [deleteUserId, setDeleteUserId] = useState(null);
-  const [showMoreTeachers, setShowMoreTeachers] = useState(false);
-  const [showMoreStudents, setShowMoreStudents] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const { data: users, isLoading } = useFetchAllUsersQuery();
+  const [deleteUser] = useDeleteUserMutation();
+  const [changePassword] = useChangePasswordMutation();
 
-  const teachers = [
-    {
-      id: 1,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "Teacher",
-    },
-    {
-      id: 2,
-      name: "Michael Brown",
-      email: "michael.brown@example.com",
-      role: "Teacher",
-    },
-  ];
+  if (isLoading) return <p>Loading...</p>;
 
-  const students = [
-    { id: 1, name: "John Doe", email: "john.doe@example.com", role: "Student" },
-    {
-      id: 2,
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      role: "Student",
-    },
-    {
-      id: 3,
-      name: "Bob Martin",
-      email: "bob.martin@example.com",
-      role: "Student",
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      email: "emily.davis@example.com",
-      role: "Student",
-    },
-    {
-      id: 5,
-      name: "Chris Wilson",
-      email: "chris.wilson@example.com",
-      role: "Student",
-    },
-  ];
+  const teachers = users?.filter((user) => user.role === "teacher");
+  const students = users?.filter((user) => user.role === "student");
+
+  const handleDelete = async (userId) => {
+    try {
+      await deleteUser(userId).unwrap();
+      toast.success("User deleted successfully!");
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete user.");
+    }
+  };
+
+  const handleChangePassword = async (userId) => {
+    try {
+      await changePassword({
+        id: userId,
+        body: { password: newPassword },
+      }).unwrap();
+      toast.success("Password updated successfully!");
+      setEditUserId(null);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to update password.");
+    }
+  };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value.toLowerCase());
   };
 
-  const filteredTeachers = teachers.filter((teacher) =>
+  const filteredTeachers = teachers?.filter((teacher) =>
     teacher.name.toLowerCase().includes(searchQuery)
   );
 
-  const filteredStudents = students.filter((student) =>
+  const filteredStudents = students?.filter((student) =>
     student.name.toLowerCase().includes(searchQuery)
   );
 
@@ -103,41 +96,73 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {(showMoreTeachers
-                ? filteredTeachers
-                : filteredTeachers.slice(0, 5)
-              ).map((teacher) => (
+              {filteredTeachers?.map((teacher) => (
                 <tr key={teacher.id} className="border-t">
                   <td className="p-2">{teacher.name}</td>
                   <td className="p-2">{teacher.email}</td>
                   <td className="p-2 space-x-2">
                     {/* Edit Password */}
-                    <AlertDialog>
+                    <AlertDialog open={editUserId === teacher._id}>
                       <AlertDialogTrigger asChild>
-                        <Button size="sm">Edit Password</Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setEditUserId(teacher._id)}
+                        >
+                          Edit Password
+                        </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Edit Password</AlertDialogTitle>
                         </AlertDialogHeader>
-                        <form className="space-y-4">
-                          <Input
-                            type="password"
-                            placeholder="Enter new password"
-                            required
-                          />
+                        <form
+                          className="space-y-4"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleChangePassword(teacher._id);
+                          }}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Enter new password"
+                              required
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeIcon size={20} />
+                              ) : (
+                                <EyeClosed size={20} />
+                              )}
+                            </button>
+                          </div>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction>Update</AlertDialogAction>
+                            <AlertDialogCancel
+                              onClick={() => setEditUserId(null)}
+                            >
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction type="submit">
+                              Update
+                            </AlertDialogAction>
                           </AlertDialogFooter>
                         </form>
                       </AlertDialogContent>
                     </AlertDialog>
 
                     {/* Delete User */}
-                    <AlertDialog>
+                    <AlertDialog open={deleteUserId === teacher._id}>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeleteUserId(teacher._id)}
+                        >
                           Delete
                         </Button>
                       </AlertDialogTrigger>
@@ -150,8 +175,16 @@ const UserManagement = () => {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction>Delete</AlertDialogAction>
+                          <AlertDialogCancel
+                            onClick={() => setDeleteUserId(null)}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(teacher._id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -160,15 +193,6 @@ const UserManagement = () => {
               ))}
             </tbody>
           </table>
-          {filteredTeachers.length > 5 && (
-            <Button
-              variant="outline"
-              onClick={() => setShowMoreTeachers(!showMoreTeachers)}
-              className="mt-4"
-            >
-              {showMoreTeachers ? "Show Less" : "Show More"}
-            </Button>
-          )}
         </div>
       </div>
 
@@ -185,41 +209,73 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {(showMoreStudents
-                ? filteredStudents
-                : filteredStudents.slice(0, 5)
-              ).map((student) => (
+              {filteredStudents?.map((student) => (
                 <tr key={student.id} className="border-t">
                   <td className="p-2">{student.name}</td>
                   <td className="p-2">{student.email}</td>
                   <td className="p-2 space-x-2">
                     {/* Edit Password */}
-                    <AlertDialog>
+                    <AlertDialog open={editUserId === student._id}>
                       <AlertDialogTrigger asChild>
-                        <Button size="sm">Edit Password</Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setEditUserId(student._id)}
+                        >
+                          Edit Password
+                        </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Edit Password</AlertDialogTitle>
                         </AlertDialogHeader>
-                        <form className="space-y-4">
-                          <Input
-                            type="password"
-                            placeholder="Enter new password"
-                            required
-                          />
+                        <form
+                          className="space-y-4"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleChangePassword(student._id);
+                          }}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Enter new password"
+                              required
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeIcon size={20} />
+                              ) : (
+                                <EyeClosed size={20} />
+                              )}
+                            </button>
+                          </div>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction>Update</AlertDialogAction>
+                            <AlertDialogCancel
+                              onClick={() => setEditUserId(null)}
+                            >
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction type="submit">
+                              Update
+                            </AlertDialogAction>
                           </AlertDialogFooter>
                         </form>
                       </AlertDialogContent>
                     </AlertDialog>
 
                     {/* Delete User */}
-                    <AlertDialog>
+                    <AlertDialog open={deleteUserId === student.id}>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeleteUserId(student.id)}
+                        >
                           Delete
                         </Button>
                       </AlertDialogTrigger>
@@ -232,8 +288,16 @@ const UserManagement = () => {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction>Delete</AlertDialogAction>
+                          <AlertDialogCancel
+                            onClick={() => setDeleteUserId(null)}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(student.id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -242,15 +306,6 @@ const UserManagement = () => {
               ))}
             </tbody>
           </table>
-          {filteredStudents.length > 5 && (
-            <Button
-              variant="outline"
-              onClick={() => setShowMoreStudents(!showMoreStudents)}
-              className="mt-4"
-            >
-              {showMoreStudents ? "Show Less" : "Show More"}
-            </Button>
-          )}
         </div>
       </div>
     </div>

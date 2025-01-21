@@ -29,7 +29,7 @@ const DashboardLayout = ({ role }) => {
         icon: <BookOpenIcon className="w-5 h-5" />,
       },
       {
-        to: "/dashboard/chat",
+        to: "/dashboard/student/chats",
         label: "Chat",
         icon: <UsersIcon className="w-5 h-5" />,
       },
