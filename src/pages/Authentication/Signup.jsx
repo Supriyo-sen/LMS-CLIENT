@@ -1,14 +1,15 @@
-// src/pages/Signup.jsx
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useRegisterMutation } from "@/redux/slices/authApiSlice";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { setCredentials } from "@/redux/slices/authSlice";
+import { useGetUserProfileQuery } from "@/redux/slices/userSlice";
+import { useFetchAllUsersQuery } from "@/redux/slices/adminSlice";
 
 const Signup = () => {
+  const refetchGetUser = useGetUserProfileQuery();
+  const refetchAllUsers = useFetchAllUsersQuery();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -17,7 +18,6 @@ const Signup = () => {
   });
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [register, { isLoading }] = useRegisterMutation();
 
   const handleChange = (e) => {
@@ -28,9 +28,8 @@ const Signup = () => {
     e.preventDefault();
     try {
       const response = await register(formData).unwrap();
-      dispatch(
-        setCredentials({ token: response.data.token, user: response.data })
-      );
+      refetchGetUser.refetch();
+      refetchAllUsers.refetch();
       toast.success(response.message || "Signup successful!");
       navigate("/");
     } catch (err) {

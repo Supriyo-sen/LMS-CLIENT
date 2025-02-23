@@ -1,10 +1,22 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useGetUserProfileQuery } from "@/redux/slices/userSlice";
+import { useEffect } from "react";
+import LoadingScreen from "../common/LoadingScreen";
 
 const PrivateRoute = () => {
-  const { token } = useSelector((state) => state.auth);
+  const { data, isLoading } = useGetUserProfileQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
-  return token ? <Outlet /> : <Navigate to="/login" />;
+  const refetchGetUser = useGetUserProfileQuery();
+
+  useEffect(() => {
+    refetchGetUser.refetch();
+  }, []);
+
+  if (isLoading) return <LoadingScreen />;
+
+  return data?.user ? <Outlet /> : <Navigate to="/login" />;
 };
 
 export default PrivateRoute;

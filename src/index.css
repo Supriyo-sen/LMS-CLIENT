@@ -81,6 +81,15 @@
   }
 }
 
+@keyframes fillText {
+  0% {
+    background-size: 0% 100%;
+  }
+  100% {
+    background-size: 100% 100%;
+  }
+}
+
 /* Navbar entrance animation */
 @keyframes slideDown {
   from {
@@ -100,4 +109,11 @@
 /* Underline animation for links */
 .group:hover span {
   transition: width 0.3s ease-in-out;
+}
+
+.animate-fill {
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  background-position: left;
+  animation: fillText 2s ease-in-out forwards;
 }

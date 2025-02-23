@@ -1,27 +1,49 @@
-import { createSlice } from "@reduxjs/toolkit";
 import { apiSlice } from "./apiSlice";
 
 const chatApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Access or create a one-on-one chat
+    accessChat: builder.mutation({
+      query: (userId) => ({
+        url: "/chat",
+        method: "POST",
+        body: { userId },
+      }),
+      invalidatesTags: ["Chat"],
+    }),
+
+    // Fetch all chats for the logged-in user
+    fetchChats: builder.query({
+      query: () => "/chat",
+      providesTags: ["Chat"],
+    }),
+
+    // Send a message
     sendMessage: builder.mutation({
       query: (messageData) => ({
-        url: "/chat",
+        url: "/chat/message",
         method: "POST",
         body: messageData,
       }),
       invalidatesTags: ["Chat"],
     }),
-    getChatHistory: builder.query({
-      query: (roomId) => `/chat/${roomId}`,
+
+    // get all messages for a specific chat
+    allMessages: builder.query({
+      query: (chatId) => `/chat/${chatId}`,
       providesTags: ["Chat"],
     }),
+
+    // Mark messages as read
     markMessagesAsRead: builder.mutation({
-      query: (roomId) => ({
-        url: `/chat/${roomId}/mark-read`,
+      query: (chatId) => ({
+        url: `/chat/${chatId}/mark-read`,
         method: "PUT",
       }),
       invalidatesTags: ["Chat"],
     }),
+
+    // Delete a message
     deleteMessage: builder.mutation({
       query: (messageId) => ({
         url: `/chat/${messageId}`,
@@ -29,6 +51,8 @@ const chatApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Chat"],
     }),
+
+    // Update a message
     updateMessage: builder.mutation({
       query: ({ messageId, updatedContent }) => ({
         url: `/chat/${messageId}`,
@@ -41,8 +65,10 @@ const chatApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useAccessChatMutation,
+  useFetchChatsQuery,
   useSendMessageMutation,
-  useGetChatHistoryQuery,
+  useAllMessagesQuery,
   useMarkMessagesAsReadMutation,
   useDeleteMessageMutation,
   useUpdateMessageMutation,

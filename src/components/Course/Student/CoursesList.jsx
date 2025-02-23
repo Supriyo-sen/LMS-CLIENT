@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
 
-const CoursesList = ({ courses, onViewStudents }) => {
+const CoursesList = ({ courses, onViewStudents, role }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCourses = courses.filter((course) =>
@@ -23,7 +23,9 @@ const CoursesList = ({ courses, onViewStudents }) => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Courses</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        {role === "student" ? "Student Management" : "Teacher Management"}{" "}
+      </h2>
       <div className="flex space-x-2 mb-4">
         <Input
           type="text"
@@ -36,7 +38,7 @@ const CoursesList = ({ courses, onViewStudents }) => {
           <Search className="h-4 w-4" />
         </Button>
       </div>
-      <div className="border rounded-lg shadow-sm">
+      <div className="bg-white shadow-md p-4 rounded-lg">
         <ScrollArea>
           <Table>
             <TableHeader>

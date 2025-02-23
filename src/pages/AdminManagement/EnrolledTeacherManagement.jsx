@@ -1,14 +1,20 @@
 import CoursesList from "@/components/Course/Student/CoursesList";
 import TeachersTable from "@/components/Course/Teacher/TeachersTable";
-import React, { useState } from "react";
+import { useFetchAllCoursesQuery } from "@/redux/slices/adminSlice";
+import React, { useEffect, useState } from "react";
 
 const EnrolledTeacherManagement = () => {
+  const role = "teacher";
   const [viewingTeachers, setViewingTeachers] = useState(false);
   const [teachers, setTeachers] = useState([]);
-  const [courses] = useState([
-    { id: 1, name: "Mathematics" },
-    { id: 2, name: "Science" },
-  ]);
+  const { data: response, isLoading, refetch } = useFetchAllCoursesQuery();
+  const courses = response || []; // Adjust based on API response
+
+  useEffect(() => {
+    if (!courses.length) {
+      refetch();
+    }
+  }, [courses, refetch]);
 
   const fetchTeachers = (courseId) => {
     // Mocked data; replace with API call
@@ -31,7 +37,11 @@ const EnrolledTeacherManagement = () => {
   return (
     <div className="container mx-auto">
       {!viewingTeachers ? (
-        <CoursesList courses={courses} onViewStudents={fetchTeachers} />
+        <CoursesList
+          courses={courses}
+          role={role}
+          onViewStudents={fetchTeachers}
+        />
       ) : (
         <TeachersTable
           teachers={teachers}

@@ -57,7 +57,7 @@ const UserList = ({ users, onSelectUser }) => {
         <div className="p-4 space-y-2">
           {filteredUsers.map((user) => (
             <div
-              key={user.id}
+              key={user._id}
               className="flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               onClick={() => onSelectUser(user)}
               tabIndex={0}

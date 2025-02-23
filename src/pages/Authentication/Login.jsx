@@ -1,20 +1,17 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useLoginMutation } from "@/redux/slices/authApiSlice";
-import { setCredentials } from "@/redux/slices/authSlice";
+import { useGetUserProfileQuery } from "@/redux/slices/userSlice";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [login, { isLoading }] = useLoginMutation();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const refetchGetUser = useGetUserProfileQuery();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,11 +21,22 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await login(formData).unwrap();
-      dispatch(
-        setCredentials({ token: response.data.token, user: response.data })
-      );
+
+      refetchGetUser.refetch();
 
       toast.success(response.message || "Login successful!");
+
+      const { role } = response.data;
+
+      if (role === "student") {
+        window.location.href = "/dashboard/student";
+      } else if (role === "admin") {
+        window.location.href = "/dashboard/admin";
+      } else if (role === "teacher") {
+        window.location.href = "/dashboard/teacher";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err) {
       setError(err?.data?.message || "Login failed. Please try again.");
     }

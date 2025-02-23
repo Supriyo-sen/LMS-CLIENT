@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { zfd } from "zod-form-data";
 import {
   Form,
   FormControl,
@@ -20,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "../../ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -30,24 +29,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { useAddCourseMutation } from "@/redux/slices/adminSlice";
-import toast from "react-hot-toast";
+import { Pencil } from "lucide-react";
 
 const formSchema = z.object({
-  image: zfd
-    .file()
-    .refine((file) => file.size < 5000000, {
-      message: "File can't be bigger than 5MB.",
-    })
-    .refine(
-      (file) => ["image/jpeg", "image/png", "image/jpg"].includes(file.type),
-      {
-        message: "File format must be either jpg, jpeg lub png.",
-      }
-    ),
   name: z.string().min(1, { message: "Course name is required" }),
-
+  image: z.string().url({ message: "Invalid image URL" }),
   price: z.string().min(0, { message: "Price must be a positive number" }),
   discountPrice: z
     .string()
@@ -66,24 +52,7 @@ const formSchema = z.object({
   materials: z.array(
     z.object({
       name: z.string().min(1, { message: "Material name is required" }),
-      file: zfd
-        .file()
-        .refine((file) => file.size < 5000000, {
-          message: "File can't be bigger than 5MB.",
-        })
-        .refine(
-          (file) =>
-            [
-              "image/jpeg",
-              "image/png",
-              "image/jpg",
-              "application/pdf",
-              "doc",
-            ].includes(file.type),
-          {
-            message: "File format must be either pdf or doc.",
-          }
-        ),
+      file: z.string().min(1, { message: "Material file is required" }),
     })
   ),
   liveClasses: z.array(
@@ -105,8 +74,7 @@ const formSchema = z.object({
     .default("upcoming"),
 });
 
-const AddCourse = () => {
-  const [addCourse, { isLoading }] = useAddCourseMutation();
+const EditCourse = ({ id }) => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -126,78 +94,26 @@ const AddCourse = () => {
     },
   });
 
-  const { control, handleSubmit, setValue } = form;
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const { control, handleSubmit } = form;
 
   const materialsFieldArray = useFieldArray({
     control,
     name: "materials",
   });
 
-  const handleMaterialsFileChange = (e, index) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      setSelectedFiles((prevFiles) => [...prevFiles, file]);
-
-      setValue(`materials.${index}.file`, file);
-    }
-  };
-
   const liveClassesFieldArray = useFieldArray({
     control,
     name: "liveClasses",
   });
 
-  const handleImageChange = (e) => {
-    setSelectedImage(e.target.files[0]);
+  const onSubmit = (data) => {
+    console.log("Form Data:", data);
   };
-
-  const onSubmit = async (data) => {
-    // const formData = new FormData();
-
-    // // Append text fields
-    // formData.append("name", data.name);
-    // formData.append("price", data.price);
-    // formData.append("discountPrice", data.discountPrice);
-    // formData.append("oldCoursePrice", data.oldCoursePrice);
-    // formData.append("numberOfLessons", data.numberOfLessons);
-    // formData.append("duration", data.duration);
-    // formData.append("startDate", data.startDate.toISOString());
-    // formData.append("endDate", data.endDate.toISOString());
-    // formData.append("teacherId", data.teacherId || ""); // Ensure it's not undefined
-    // formData.append(
-    //   "allowNewEnrollments",
-    //   data.allowNewEnrollments ? "true" : "false"
-    // ); // Convert to string
-    // formData.append("courseState", data.courseState);
-
-    // // Append course image
-    // if (selectedImage) {
-    //   formData.append("image", selectedImage);
-    // }
-
-    // // Append materials (multiple files)
-    // selectedFiles.forEach((file) => {
-    //   formData.append("materials", file);
-    // });
-
-    try {
-      console.log("Form Data:", data);
-
-      await addCourse(data).unwrap();
-      toast.success("Course added successfully!");
-    } catch (error) {
-      toast.error("Failed to add course.");
-      console.error("Failed to add course:", error);
-    }
-  };
-
   return (
     <Dialog className="">
       <DialogTrigger>
-        <Button>Add Course</Button>
+        {" "}
+        <Pencil className="h-4 w-4" />
       </DialogTrigger>
       <DialogContent className="max-h-[90%] max-w-[90%] xl:max-w-[70%] overflow-y-scroll">
         <DialogHeader>
@@ -205,28 +121,22 @@ const AddCourse = () => {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Field to Edit image */}
             <FormField
-              name="image"
               control={form.control}
+              name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Course Image</FormLabel>
+                  <FormLabel>Course Image URL</FormLabel>
                   <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      {...field}
-                      onChange={(e) => {
-                        handleImageChange(e);
-                      }}
-                    />
+                    <Input placeholder="Enter image URL" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/*Field to add course name, price */}
+            {/*Field to Edit course name, price */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -261,7 +171,7 @@ const AddCourse = () => {
               />
             </div>
 
-            {/* Field to add discount price and course duration  */}
+            {/* Field to Edit discount price and course duration  */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -298,7 +208,7 @@ const AddCourse = () => {
               />
             </div>
 
-            {/* Field to add old course price and number of lessons */}
+            {/* Field to Edit old course price and number of lessons */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -337,7 +247,7 @@ const AddCourse = () => {
               />
             </div>
 
-            {/* Field to add start date, end date*/}
+            {/* Field to Edit start date, end date*/}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
@@ -374,7 +284,7 @@ const AddCourse = () => {
               />
 
               <FormField
-                control={form.control}
+                control={control}
                 name={"courseState"}
                 render={({ field }) => (
                   <FormItem className="flex gap-4 items-center justify-start space-y-0">
@@ -409,7 +319,7 @@ const AddCourse = () => {
                   className="flex flex-wrap items-end gap-4 mb-4"
                 >
                   <FormField
-                    control={form.control}
+                    control={control}
                     name={`materials.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
@@ -421,8 +331,6 @@ const AddCourse = () => {
                       </FormItem>
                     )}
                   />
-
-                  {/* File Input Field */}
                   <FormField
                     control={control}
                     name={`materials.${index}.file`}
@@ -432,16 +340,13 @@ const AddCourse = () => {
                           <FormLabel>Material File</FormLabel>
                           <FormControl>
                             <Input
+                              placeholder="Material file"
+                              {...field}
                               type="file"
-                              onChange={(e) =>
-                                handleMaterialsFileChange(e, index)
-                              }
-                              accept=".pdf,.doc,.docx,.mp4,.mp3"
                             />
                           </FormControl>
                           <FormMessage />
                         </div>
-
                         {field.value && (
                           <Button
                             variant="destructive"
@@ -455,13 +360,12 @@ const AddCourse = () => {
                   />
                 </div>
               ))}
-
               <Button
                 onClick={() =>
                   materialsFieldArray.append({ name: "", file: "" })
                 }
               >
-                Add Material
+                Edit Material
               </Button>
             </div>
 
@@ -565,7 +469,7 @@ const AddCourse = () => {
                   })
                 }
               >
-                Add Live Class
+                Edit Live Class
               </Button>
             </div>
 
@@ -593,4 +497,4 @@ const AddCourse = () => {
   );
 };
 
-export default AddCourse;
+export default EditCourse;
