@@ -71,19 +71,9 @@ const formSchema = z.object({
         .refine((file) => file.size < 5000000, {
           message: "File can't be bigger than 5MB.",
         })
-        .refine(
-          (file) =>
-            [
-              "image/jpeg",
-              "image/png",
-              "image/jpg",
-              "application/pdf",
-              "doc",
-            ].includes(file.type),
-          {
-            message: "File format must be either pdf or doc.",
-          }
-        ),
+        .refine((file) => ["application/pdf", "doc"].includes(file.type), {
+          message: "File format must be either pdf or doc.",
+        }),
     })
   ),
   liveClasses: z.array(
@@ -135,54 +125,12 @@ const AddCourse = () => {
     name: "materials",
   });
 
-  const handleMaterialsFileChange = (e, index) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      setSelectedFiles((prevFiles) => [...prevFiles, file]);
-
-      setValue(`materials.${index}.file`, file);
-    }
-  };
-
   const liveClassesFieldArray = useFieldArray({
     control,
     name: "liveClasses",
   });
 
-  const handleImageChange = (e) => {
-    setSelectedImage(e.target.files[0]);
-  };
-
   const onSubmit = async (data) => {
-    // const formData = new FormData();
-
-    // // Append text fields
-    // formData.append("name", data.name);
-    // formData.append("price", data.price);
-    // formData.append("discountPrice", data.discountPrice);
-    // formData.append("oldCoursePrice", data.oldCoursePrice);
-    // formData.append("numberOfLessons", data.numberOfLessons);
-    // formData.append("duration", data.duration);
-    // formData.append("startDate", data.startDate.toISOString());
-    // formData.append("endDate", data.endDate.toISOString());
-    // formData.append("teacherId", data.teacherId || ""); // Ensure it's not undefined
-    // formData.append(
-    //   "allowNewEnrollments",
-    //   data.allowNewEnrollments ? "true" : "false"
-    // ); // Convert to string
-    // formData.append("courseState", data.courseState);
-
-    // // Append course image
-    // if (selectedImage) {
-    //   formData.append("image", selectedImage);
-    // }
-
-    // // Append materials (multiple files)
-    // selectedFiles.forEach((file) => {
-    //   formData.append("materials", file);
-    // });
-
     try {
       console.log("Form Data:", data);
 
@@ -196,29 +144,29 @@ const AddCourse = () => {
 
   return (
     <Dialog className="">
-      <DialogTrigger>
-        <Button>Add Course</Button>
-      </DialogTrigger>
+      <DialogTrigger>Add Course</DialogTrigger>
       <DialogContent className="max-h-[90%] max-w-[90%] xl:max-w-[70%] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Field to add image */}
             <FormField
-              name="image"
               control={form.control}
-              render={({ field }) => (
+              name="image"
+              render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Course Image</FormLabel>
+                  <FormLabel>Course Image URL</FormLabel>
                   <FormControl>
                     <Input
+                      placeholder="Enter image URL"
                       type="file"
-                      accept="image/*"
-                      {...field}
-                      onChange={(e) => {
-                        handleImageChange(e);
-                      }}
+                      {...fieldProps}
+                      accept="image/png, image/jpeg, image/jpg"
+                      onChange={(event) =>
+                        onChange(event.target.files && event.target.files[0])
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -374,7 +322,7 @@ const AddCourse = () => {
               />
 
               <FormField
-                control={form.control}
+                control={control}
                 name={"courseState"}
                 render={({ field }) => (
                   <FormItem className="flex gap-4 items-center justify-start space-y-0">
@@ -409,7 +357,7 @@ const AddCourse = () => {
                   className="flex flex-wrap items-end gap-4 mb-4"
                 >
                   <FormField
-                    control={form.control}
+                    control={control}
                     name={`materials.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
@@ -421,27 +369,27 @@ const AddCourse = () => {
                       </FormItem>
                     )}
                   />
-
-                  {/* File Input Field */}
                   <FormField
                     control={control}
                     name={`materials.${index}.file`}
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem className="flex justify-between items-end gap-4">
                         <div className="flex flex-col space-y-2">
                           <FormLabel>Material File</FormLabel>
                           <FormControl>
                             <Input
+                              placeholder="Material file"
                               type="file"
-                              onChange={(e) =>
-                                handleMaterialsFileChange(e, index)
+                              {...fieldProps}
+                              onChange={(event) =>
+                                onChange(
+                                  event.target.files && event.target.files[0]
+                                )
                               }
-                              accept=".pdf,.doc,.docx,.mp4,.mp3"
                             />
                           </FormControl>
                           <FormMessage />
                         </div>
-
                         {field.value && (
                           <Button
                             variant="destructive"
@@ -455,7 +403,6 @@ const AddCourse = () => {
                   />
                 </div>
               ))}
-
               <Button
                 onClick={() =>
                   materialsFieldArray.append({ name: "", file: "" })
