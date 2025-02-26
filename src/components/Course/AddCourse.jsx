@@ -59,8 +59,8 @@ const formSchema = z.object({
     .string()
     .min(1, { message: "Must have at least 1 lesson" }),
   duration: z.string().min(1, { message: "Duration is required" }),
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date({ required_error: "End date is required" }),
+  startDate: z.string({ required_error: "Start date is required" }),
+  endDate: z.string({ required_error: "End date is required" }),
 
   allowNewEnrollments: z.boolean(),
   materials: z.array(
@@ -107,8 +107,8 @@ const AddCourse = () => {
       oldCoursePrice: "",
       numberOfLessons: "",
       duration: "",
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: "",
+      endDate: "",
       allowNewEnrollments: false,
       materials: [],
       liveClasses: [],
@@ -140,38 +140,38 @@ const AddCourse = () => {
   const onSubmit = async (data) => {
     try {
       console.log("Form Data:", data);
-    const formData = new FormData();
+      const formData = new FormData();
 
-    // Append Course Image if selected
-    if (selectedImage) {
-      formData.append("image", selectedImage); // API expects 'image'
-    } else {
-      toast.error("Course image is required.");
-      return;
-    }
-
-    // Append Materials
-    data.materials.forEach((material, index) => {
-      if (material.file) {
-        formData.append(`materials[${index}][name]`, material.name);
-        formData.append(`materials[${index}][file]`, material.file);
+      // Append Course Image if selected
+      if (selectedImage) {
+        formData.append("image", selectedImage); // API expects 'image'
       } else {
-        toast.error("Material file is required.");
+        toast.error("Course image is required.");
         return;
       }
-    });
 
-    try {
+      // Append Materials
+      data.materials.forEach((material, index) => {
+        if (material.file) {
+          formData.append(`materials[${index}][name]`, material.name);
+          formData.append(`materials[${index}][file]`, material.file);
+        } else {
+          toast.error("Material file is required.");
+          return;
+        }
+      });
+
       console.log("Sending Data:", data);
       console.log("Sending Form Data:", formData);
 
       await addCourse(data, formData).unwrap(); // Send both JSON & FormData
-      toast.success("Course added successfully!");
     } catch (error) {
-      toast.error("Failed to add course.");
       console.error("Error adding course:", error);
+      toast.error("Failed to add course");
     }
   };
+
+  console.log("Form State:", form.watch("startDate"), form.watch("endDate"));
 
   return (
     <Dialog className="">
@@ -326,8 +326,10 @@ const AddCourse = () => {
                     <FormLabel>Start Date</FormLabel>
                     <FormControl>
                       <DatePicker
-                        selected={field.value}
-                        onChange={field.onChange}
+                        value={field.value ? new Date(field.value) : null}
+                        onChange={(date) => {
+                          field.onChange(date ? date.toISOString() : ""); // Ensure value updates
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -343,8 +345,10 @@ const AddCourse = () => {
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
                       <DatePicker
-                        selected={field.value}
-                        onChange={field.onChange}
+                        value={field.value ? new Date(field.value) : null}
+                        onChange={(date) => {
+                          field.onChange(date ? date.toISOString() : ""); // Ensure value updates
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -472,8 +476,10 @@ const AddCourse = () => {
                         <FormLabel>Class Schedule</FormLabel>
                         <FormControl>
                           <DatePicker
-                            selected={field.value}
-                            onChange={field.onChange}
+                            value={field.value ? new Date(field.value) : null}
+                            onChange={(date) => {
+                              field.onChange(date ? date.toISOString() : ""); // Ensure value updates
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
