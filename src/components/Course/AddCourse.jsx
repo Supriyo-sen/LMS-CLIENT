@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { zfd } from "zod-form-data";
+import { formData, zfd } from "zod-form-data";
 import {
   Form,
   FormControl,
@@ -35,7 +35,7 @@ import { useAddCourseMutation } from "@/redux/slices/adminSlice";
 import toast from "react-hot-toast";
 
 const formSchema = z.object({
-  image: zfd
+  courseImage: zfd
     .file()
     .refine((file) => file.size < 5000000, {
       message: "File can't be bigger than 5MB.",
@@ -61,7 +61,7 @@ const formSchema = z.object({
   duration: z.string().min(1, { message: "Duration is required" }),
   startDate: z.date({ required_error: "Start date is required" }),
   endDate: z.date({ required_error: "End date is required" }),
-  teacherId: z.string().optional(),
+
   allowNewEnrollments: z.boolean(),
   materials: z.array(
     z.object({
@@ -111,7 +111,7 @@ const AddCourse = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      image: "",
+      courseImage: "",
       price: "",
       discountPrice: "",
       oldCoursePrice: "",
@@ -119,7 +119,6 @@ const AddCourse = () => {
       duration: "",
       startDate: new Date(),
       endDate: new Date(),
-      teacherId: "",
       allowNewEnrollments: false,
       materials: [],
       liveClasses: [],
@@ -151,46 +150,44 @@ const AddCourse = () => {
   });
 
   const handleImageChange = (e) => {
-    setSelectedImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setValue("courseImage", file);
+    }
   };
 
   const onSubmit = async (data) => {
-    // const formData = new FormData();
+    const formData = new FormData();
 
-    // // Append text fields
-    // formData.append("name", data.name);
-    // formData.append("price", data.price);
-    // formData.append("discountPrice", data.discountPrice);
-    // formData.append("oldCoursePrice", data.oldCoursePrice);
-    // formData.append("numberOfLessons", data.numberOfLessons);
-    // formData.append("duration", data.duration);
-    // formData.append("startDate", data.startDate.toISOString());
-    // formData.append("endDate", data.endDate.toISOString());
-    // formData.append("teacherId", data.teacherId || ""); // Ensure it's not undefined
-    // formData.append(
-    //   "allowNewEnrollments",
-    //   data.allowNewEnrollments ? "true" : "false"
-    // ); // Convert to string
-    // formData.append("courseState", data.courseState);
+    // Append Course Image if selected
+    if (selectedImage) {
+      formData.append("image", selectedImage); // API expects 'image'
+    } else {
+      toast.error("Course image is required.");
+      return;
+    }
 
-    // // Append course image
-    // if (selectedImage) {
-    //   formData.append("image", selectedImage);
-    // }
-
-    // // Append materials (multiple files)
-    // selectedFiles.forEach((file) => {
-    //   formData.append("materials", file);
-    // });
+    // Append Materials
+    data.materials.forEach((material, index) => {
+      if (material.file) {
+        formData.append(`materials[${index}][name]`, material.name);
+        formData.append(`materials[${index}][file]`, material.file);
+      } else {
+        toast.error("Material file is required.");
+        return;
+      }
+    });
 
     try {
-      console.log("Form Data:", data);
+      console.log("Sending Data:", data);
+      console.log("Sending Form Data:", formData);
 
-      await addCourse(data).unwrap();
+      await addCourse(data, formData).unwrap(); // Send both JSON & FormData
       toast.success("Course added successfully!");
     } catch (error) {
       toast.error("Failed to add course.");
-      console.error("Failed to add course:", error);
+      console.error("Error adding course:", error);
     }
   };
 
@@ -206,8 +203,8 @@ const AddCourse = () => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
-              name="image"
-              control={form.control}
+              name="courseImage"
+              control={control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Course Image</FormLabel>
@@ -215,9 +212,9 @@ const AddCourse = () => {
                     <Input
                       type="file"
                       accept="image/*"
-                      {...field}
                       onChange={(e) => {
-                        handleImageChange(e);
+                        field.onChange(e); // This updates the form state automatically
+                        handleImageChange(e); // This sets the file to your custom state and calls setValue
                       }}
                     />
                   </FormControl>
