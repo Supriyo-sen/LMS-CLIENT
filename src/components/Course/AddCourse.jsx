@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { formData, zfd } from "zod-form-data";
 import {
   Form,
   FormControl,
@@ -35,17 +34,9 @@ import { useAddCourseMutation } from "@/redux/slices/adminSlice";
 import toast from "react-hot-toast";
 
 const formSchema = z.object({
-  courseImage: zfd
-    .file()
-    .refine((file) => file.size < 5000000, {
-      message: "File can't be bigger than 5MB.",
-    })
-    .refine(
-      (file) => ["image/jpeg", "image/png", "image/jpg"].includes(file.type),
-      {
-        message: "File format must be either jpg, jpeg lub png.",
-      }
-    ),
+  courseImage: z.any().refine((file) => file, {
+    message: "Course image is required",
+  }),
   name: z.string().min(1, { message: "Course name is required" }),
 
   price: z.string().min(0, { message: "Price must be a positive number" }),
@@ -66,20 +57,15 @@ const formSchema = z.object({
   materials: z.array(
     z.object({
       name: z.string().min(1, { message: "Material name is required" }),
-      file: zfd
-        .file()
-        .refine((file) => file.size < 5000000, {
-          message: "File can't be bigger than 5MB.",
-        })
-        .refine((file) => ["application/pdf", "doc"].includes(file.type), {
-          message: "File format must be either pdf or doc.",
-        }),
+      file: z
+        .any()
+        .refine((file) => file, { message: "Material file is required" }),
     })
   ),
   liveClasses: z.array(
     z.object({
       name: z.string().min(1, { message: "Live class name is required" }),
-      schedule: z.date({ required_error: "Live class schedule is required" }),
+      schedule: z.string({ required_error: "Live class schedule is required" }),
       duration: z.string().min(1, { message: "Duration is required" }),
       status: z
         .enum(["upcoming", "running", "completed"], {
@@ -139,39 +125,36 @@ const AddCourse = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("Form Data:", data);
       const formData = new FormData();
 
-      // Append Course Image if selected
-      if (selectedImage) {
-        formData.append("image", selectedImage); // API expects 'image'
-      } else {
-        toast.error("Course image is required.");
-        return;
-      }
+      formData.append("courseImage", data.courseImage); // Image Upload
+      formData.append("name", data.name);
+      formData.append("price", data.price);
+      formData.append("discountPrice", data.discountPrice);
+      formData.append("oldCoursePrice", data.oldCoursePrice);
+      formData.append("numberOfLessons", data.numberOfLessons);
+      formData.append("duration", data.duration);
+      formData.append("startDate", data.startDate);
+      formData.append("endDate", data.endDate);
+      formData.append("allowNewEnrollments", data.allowNewEnrollments);
+      formData.append("courseState", data.courseState);
 
-      // Append Materials
-      data.materials.forEach((material, index) => {
-        if (material.file) {
-          formData.append(`materials[${index}][name]`, material.name);
-          formData.append(`materials[${index}][file]`, material.file);
-        } else {
-          toast.error("Material file is required.");
-          return;
-        }
+      // Handle multiple materials (array of files)
+      data.materials.forEach((material) => {
+        formData.append("materials", material.file); // Must match `multer.fields`
       });
 
-      console.log("Sending Data:", data);
-      console.log("Sending Form Data:", formData);
+      console.log("Submitting FormData:", formData);
 
-      await addCourse(data, formData).unwrap(); // Send both JSON & FormData
+      await addCourse(formData).unwrap(); // Send FormData instead of JSON
+      toast.success("Course added successfully!");
     } catch (error) {
       console.error("Error adding course:", error);
       toast.error("Failed to add course");
     }
   };
 
-  console.log("Form State:", form.watch("startDate"), form.watch("endDate"));
+  // console.log("Form State:", form.watch("startDate"), form.watch("endDate"));
 
   return (
     <Dialog className="">
@@ -190,15 +173,24 @@ const AddCourse = () => {
                 <FormItem>
                   <FormLabel>Course Image URL</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter image URL"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        field.onChange(e); // This updates the form state automatically
-                        handleImageChange(e); // This sets the file to your custom state and calls setValue
-                      }}
-                    />
+                    <>
+                      <Input
+                        placeholder="Enter image URL"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          field.onChange(e); // This updates the form state automatically
+                          handleImageChange(e); // This sets the file to your custom state and calls setValue
+                        }}
+                      />
+                      {field.value ? (
+                        <img
+                          src={URL.createObjectURL(field.value)}
+                          alt="Section"
+                          className="size-32"
+                        />
+                      ) : null}
+                    </>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -16,15 +16,15 @@ const adminApiSlice = apiSlice.injectEndpoints({
     }),
     fetchAllCourses: builder.query({
       query: () => "/admin/courses",
-      providesTags: ["Admin"],
+      providesTags: ["Course"],
     }),
     addCourse: builder.mutation({
       query: (formData) => ({
-        url: `/admin/courses`,
+        url: "/admin/courses",
         method: "POST",
         body: formData,
       }),
-      invalidatesTags: ["Admin"],
+      invalidatesTags: ["Course"],
     }),
   }),
 });
